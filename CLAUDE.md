@@ -8,7 +8,7 @@ Debugging and integration testing tools for the Atheros AR9170 (carl9170) USB Wi
 
 - **carl9170-driver** (`~/WebstormProjects/carl9170-driver/`) — Linux kernel driver patches
 - **carl9170fw-custom** (`~/WebstormProjects/carl9170fw-custom/`) — Firmware (SH-2 cross-compiled)
-- **wavemon-custom** (`~/WebstormProjects/wavemon-custom/`) — WiFi monitoring TUI with custom enhancements
+- **linux-wifi-analyzer** (`~/WebstormProjects/linux-wifi-analyzer/`) — WiFi analyzer TUI (fork of wavemon, full rewrite)
 - **wavemon-carl9170-debug** (this repo) — Debug tooling and integration
 
 ## Architecture
@@ -22,7 +22,7 @@ carl9170 Linux kernel driver ← carl9170-driver patches
   ↕
 mac80211 WiFi stack
   ↕
-wavemon (monitoring) ← wavemon-custom patches
+linux-wifi-analyzer ← fork of wavemon
 ```
 
 ## Languages & Build
@@ -52,9 +52,9 @@ bash -x test.sh
 cd ~/WebstormProjects/carl9170fw-custom
 bash -x build.sh --build --install --load --validate
 
-# Wavemon: build custom version
-cd ~/WebstormProjects/wavemon-custom
-bash -x build_wavemon.sh
+# linux-wifi-analyzer: build
+cd ~/WebstormProjects/linux-wifi-analyzer
+bash -x build.sh
 ```
 
 ## Hardware Target
