@@ -60,3 +60,55 @@ bash -x build.sh
 ## Hardware Target
 
 Atheros AR9170 USB WiFi chipset (e.g., Fritz!WLAN N). Driver unmaintained since 2016; this ecosystem updates it to ratified 802.11n (Sept 2009) and fixes stability issues.
+
+## Project-Specific Rules
+
+### Repo Boundaries
+
+- wifi-central is for debug tooling and integration ONLY — no UI code, no driver code, no firmware code
+- All code changes go into the repo that owns them: linux-wifi-analyzer, carl9170-driver, or carl9170fw-custom
+
+### Kernel Build Targets
+
+- **Local builds** (module compilation, testing, loading): build against local kernel headers matching `uname -r`
+- **Upstream patches** (for `git send-email`): generate against current mainline HEAD via `git sparse-checkout`
+- Never mix: don't build local modules from mainline source, don't submit patches based on local kernel source
+
+### Upstream Kernel Patches
+
+- Generate against current mainline HEAD
+- Validate with `checkpatch.pl --strict` — must be 0 errors/warnings/checks
+- Verify patches apply cleanly to mainline source
+- Send via `git send-email` to maintainer + mailing list
+- Fallback for carl9170: Christian Lamparter `<chunkeey@googlemail.com>` + `linux-wireless@vger.kernel.org`
+- `send-upstream` alias: 1. checkpatch 2. verify apply 3. get_maintainer.pl 4. summary + confirm 5. git send-email
+
+### Health Check (loadmyenv)
+
+After every driver/firmware/module load, scan dmesg for ALL WiFi errors filtered by current PHY:
+
+```bash
+PHY=$(basename $(ls -d /sys/class/ieee80211/phy* 2>/dev/null | tail -1) 2>/dev/null)
+dmesg | grep -iE "ieee80211|carl9170|ath|wlan[0-9]|usb.*3-7|$PHY" | \
+  grep -iE 'error|fail|timeout|crash|bug|panic|restart|reset|refused|denied|-110|-71|-5' | \
+  grep "$PHY" | tail -20
+```
+
+Also check: interface exists, NM connection status, no crashes in current PHY.
+
+### Build Cycle (driver/firmware projects)
+
+**build → install → load → health check → test → verify**
+
+1. Build: `bash -x build.sh --prepare --build`
+2. Install: `--install`
+3. Load: `--load`
+4. Health check: interface exists, connected, no dmesg errors on current PHY
+5. Test: run test suite
+6. Verify: check logs, version, behavior
+
+If health check fails after a new patch: **revert immediately**.
+
+### Patch Creation (driver projects)
+
+Every new bugfix patch MUST follow: get clean baseline → save baseline files → apply change to copy → generate diff against baseline → verify applies cleanly → write patch with git-format header → full cycle rebuild.
