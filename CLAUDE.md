@@ -109,6 +109,72 @@ Also check: interface exists, NM connection status, no crashes in current PHY.
 
 If health check fails after a new patch: **revert immediately**.
 
-### Patch Creation (driver projects)
+### Patch Creation Workflow (MANDATORY)
 
-Every new bugfix patch MUST follow: get clean baseline → save baseline files → apply change to copy → generate diff against baseline → verify applies cleanly → write patch with git-format header → full cycle rebuild.
+Every new bugfix patch MUST follow this exact sequence:
+
+```bash
+# 1. Get clean baseline (all EXISTING patches applied, NOT the new one)
+bash -x build.sh --prepare
+# Result: build dir has source with N existing patches
+
+# 2. Save baseline files you will modify
+cp <build-dir>/<path>/file.c /tmp/file_base.c
+
+# 3. Apply ONLY your change to a copy
+cp /tmp/file_base.c /tmp/file_new.c
+# Edit /tmp/file_new.c with your fix
+
+# 4. Generate diff against baseline copy (NOT against /usr/local/src/)
+diff -up /tmp/file_base.c /tmp/file_new.c | \
+  sed 's|file_base.c|a/<path>/file.c|; s|file_new.c|b/<path>/file.c|' \
+  > /tmp/my_patch.diff
+
+# 5. Verify patch applies to clean baseline
+cd <build-dir>/
+patch -p1 --dry-run < /tmp/my_patch.diff
+# or: git apply --check /tmp/my_patch.diff
+# MUST print "APPLIES CLEANLY"
+
+# 6. Write patch file with git-format header
+cat > patches/<type>/NNNN-description.patch << 'EOF'
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ...
+Subject: ...
+
+<commit message body explaining WHY>
+
+Signed-off-by: ...
+---
+ <diffstat>
+EOF
+cat /tmp/my_patch.diff >> patches/<type>/NNNN-description.patch
+
+# 7. Verify full cycle
+bash -x build.sh --prepare  # Must show N+1 patches applied
+bash -x build.sh --build    # Must compile clean, 0 errors
+bash -x build.sh --install --load  # Must load
+# Health check: interface exists, connected, no crashes
+```
+
+### NEVER do this:
+- `diff <build-dir>/file.c /usr/local/src/.../file.c` — `/usr/local/src/` has ALL your direct edits including unrelated changes from other patches
+- Edit `/usr/local/src/` and expect build.sh to pick it up — it extracts fresh from tarball/git + applies .patch files only
+- Generate one diff covering multiple unrelated patches — each patch must be a single logical change
+- Write patches without git-format header (From, Subject, Signed-off-by)
+
+### Dual Build Mode (Local + Upstream)
+
+**Local mode** (default) — build + run:
+- Patches in `patches/bugfix/` applied on top of local kernel source
+- Built against `uname -r` headers
+- Command: `bash -x build.sh --prepare --build --install --load`
+
+**Upstream mode** — validate only (no build):
+- Patches in `patches/upstream/` validated against mainline HEAD
+- Fetched via `build.sh --rebase` (HTTP from git.kernel.org)
+- Validated with `checkpatch.pl --strict`
+- Not built — mainline may use APIs not in local kernel
+- Sent via `git send-email`
+
+**Never mix:** bugfix/ patches use local kernel baseline, upstream/ patches use mainline HEAD. A bugfix patch will NOT apply to mainline and vice versa.
