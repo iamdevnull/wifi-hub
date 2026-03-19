@@ -9,7 +9,7 @@ Debugging and integration testing tools for the Atheros AR9170 (carl9170) USB Wi
 - **carl9170-driver** (`~/WebstormProjects/carl9170-driver/`) — Linux kernel driver patches
 - **carl9170fw-custom** (`~/WebstormProjects/carl9170fw-custom/`) — Firmware (SH-2 cross-compiled)
 - **linux-wifi-analyzer** (`~/WebstormProjects/linux-wifi-analyzer/`) — WiFi analyzer TUI (fork of wavemon, full rewrite)
-- **wifi-central** (this repo) — Debug tooling and integration
+- **wifi-hub** (this repo) — Debug tooling and integration
 
 ## Architecture
 
@@ -65,7 +65,7 @@ Atheros AR9170 USB WiFi chipset (e.g., Fritz!WLAN N). Driver unmaintained since 
 
 ### Repo Boundaries
 
-- wifi-central is for debug tooling and integration ONLY — no UI code, no driver code, no firmware code
+- wifi-hub is for debug tooling and integration ONLY — no UI code, no driver code, no firmware code
 - All code changes go into the repo that owns them: linux-wifi-analyzer, carl9170-driver, or carl9170fw-custom
 
 ### Kernel Build Targets
