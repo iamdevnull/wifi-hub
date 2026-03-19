@@ -11,6 +11,17 @@ Debugging and integration testing tools for the Atheros AR9170 (carl9170) USB Wi
 - **linux-wifi-analyzer** (`~/WebstormProjects/linux-wifi-analyzer/`) — WiFi analyzer TUI (fork of wavemon, full rewrite)
 - **wifi-hub** (this repo) — Debug tooling and integration
 
+## 360° Ecosystem View
+
+This hub exists to work across all 4 repos with a holistic view. Every change — driver patch, firmware fix, analyzer feature, or debug script — must be considered from the full-stack perspective:
+
+- **Driver change?** → Does the firmware need to match? Does the analyzer display it? Does the hub need a new test?
+- **Firmware change?** → Does the driver expect the old behavior? Does dmesg output change? Does the analyzer parse it?
+- **Analyzer change?** → Does it rely on driver/firmware features that might not be present? Does the help screen match?
+- **Bug found?** → Which layer owns the fix? Trace from hardware → firmware → driver → mac80211 → analyzer before deciding.
+
+Never work in isolation. Always ask: "What does this change mean for the other 3 repos?"
+
 ## Architecture
 
 ```
