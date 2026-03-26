@@ -1,0 +1,6 @@
+# Claude session data
+.claude/
+
+# Editor
+*.swp
+*~
