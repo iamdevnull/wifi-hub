@@ -56,14 +56,14 @@ linux-wifi-analyzer ← fork of wavemon
 ```bash
 # Driver: build and test
 cd ~/WebstormProjects/carl9170-driver
-bash -x build.sh --deps --prepare --build --install
+bash -x build.sh --deps --prepare --build --install --load
 bash -x test.sh
 
 # Firmware: build and validate
 cd ~/WebstormProjects/carl9170fw-custom
-bash -x build.sh --build --install --load --validate
+bash -x build.sh --prepare --build --install --load --validate
 
-# linux-wifi-analyzer: build
+# linux-wifi-analyzer: build (add --deb for .deb package)
 cd ~/WebstormProjects/linux-wifi-analyzer
 bash -x build.sh
 ```

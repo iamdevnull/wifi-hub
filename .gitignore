@@ -1,6 +1,9 @@
 # Claude session data
 .claude/
 
+# Autotools artifacts
+autom4te.cache/
+
 # Editor
 *.swp
 *~
